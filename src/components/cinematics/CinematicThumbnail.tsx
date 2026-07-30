@@ -125,7 +125,7 @@ const AnimatedParticle: React.FC<{
 };
 
 export const CinematicThumbnail: React.FC<CinematicThumbnailProps> = ({
-  variant,
+  variant = 'spiral_ascend',
   displayName,
   duration,
   isSelected = false,
