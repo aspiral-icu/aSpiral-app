@@ -21,3 +21,6 @@
 ## 2024-05-23 - Strict Dependency Installation Rule
 **Learning:** Running `npm install @eslint/js` (or similar packages) during routine environment setup aggressively modifies `package.json` and `package-lock.json`, unintentionally deleting large blocks of existing dependencies and causing severe compliance violations.
 **Action:** Never execute `npm install <package>` (or `npm i`) without the `--no-save` flag when installing temporary testing or linting dependencies to avoid destructive side-effects on project configurations.
+## 2026-08-02 - Optimize Map-to-Array Conversions Careful Consideration
+**Learning:** When converting Maps to Arrays, replacing `Array.from(map.entries())` with a manual `for...of` loop is only a performance win if you transform the data within the loop (e.g. mapping tuples to objects) to avoid an additional `.map()` pass. If you are simply pushing unmodified tuples into a new array to subsequently `.sort()`, it does not avoid intermediate allocations and is a verbose, potentially slower anti-pattern.
+**Action:** Only replace `Array.from()` with a `for...of` loop when the conversion logic can be merged with other operations (like mapping or filtering) to genuinely reduce the number of O(N) passes and intermediate array allocations.
