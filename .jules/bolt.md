@@ -21,3 +21,7 @@
 ## 2024-05-23 - Strict Dependency Installation Rule
 **Learning:** Running `npm install @eslint/js` (or similar packages) during routine environment setup aggressively modifies `package.json` and `package-lock.json`, unintentionally deleting large blocks of existing dependencies and causing severe compliance violations.
 **Action:** Never execute `npm install <package>` (or `npm i`) without the `--no-save` flag when installing temporary testing or linting dependencies to avoid destructive side-effects on project configurations.
+
+## 2024-06-25 - Optimize High-Frequency Loop Iteration and Garbage Collection
+**Learning:** Found an opportunity in `src/lib/physicsEngine.ts` to replace multiple `.forEach` loops with standard `for` loops and consolidate sequential entity loops inside the high-frequency `runPhysicsIteration` function. Doing so reduces closure allocations. Additionally, using in-place mutations (e.g., `f1[0] += fx`) instead of intermediate map/array writes (`forces.set(..., [f1[0] + fx, ...])`) prevents unnecessary array allocations on every physics tick, significantly lowering garbage collection pressure.
+**Action:** When working in high-frequency hot paths like physics or 3D rendering loops, consolidate multiple sequential iterations into a single `for` loop, replace `.forEach` with `for`, and prefer mutating temporary scoped arrays/objects in-place over creating new array allocations to minimize GC stutter.
