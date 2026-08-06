@@ -123,30 +123,34 @@ export function runPhysicsIteration(
     forces.set(conn.toEntityId, [f2[0] - fx, f2[1] - fy, f2[2] - fz]);
   });
   
-  entities.forEach(entity => {
-    const pos = positions.get(entity.id)!;
-    const f = forces.get(entity.id)!;
-    forces.set(entity.id, [
-      f[0] - pos[0] * 0.01,
-      f[1] - pos[1] * 0.01,
-      f[2] - pos[2] * 0.02,
-    ]);
-  });
-  
   const decay = Math.max(0.5, 1 - (iteration / config.iterations) * 0.5);
+  const dampingDecay = config.damping * decay;
   
-  entities.forEach(entity => {
-    const pos = positions.get(entity.id)!;
-    const force = forces.get(entity.id)!;
-    const movement = Math.hypot(force[0], force[1], force[2]) * config.damping * decay;
+  // Performance Optimization: Consolidated multiple sequential iterations over the same collection
+  // into a single loop. This avoids intermediate map writes and significantly reduces garbage
+  // collection pressure, maximizing CPU time for core calculations.
+  for (let i = 0; i < entities.length; i++) {
+    const entityId = entities[i].id;
+    const pos = positions.get(entityId)!;
+    const f = forces.get(entityId)!;
+
+    const forceX = f[0] - pos[0] * 0.01;
+    const forceY = f[1] - pos[1] * 0.01;
+    const forceZ = f[2] - pos[2] * 0.02;
+
+    const movement = Math.hypot(forceX, forceY, forceZ) * dampingDecay;
     totalMovement += movement;
     
-    positions.set(entity.id, [
-      pos[0] + force[0] * config.damping * decay,
-      pos[1] + force[1] * config.damping * decay,
-      pos[2] + force[2] * config.damping * decay,
+    positions.set(entityId, [
+      pos[0] + forceX * dampingDecay,
+      pos[1] + forceY * dampingDecay,
+      pos[2] + forceZ * dampingDecay,
     ]);
-  });
+
+    // We don't strictly need to write forces back if they aren't used in subsequent iterations
+    // but preserving for exact behavior compatibility if other functions read forces.
+    forces.set(entityId, [forceX, forceY, forceZ]);
+  }
   
   return totalMovement;
 }

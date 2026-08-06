@@ -21,3 +21,7 @@
 ## 2024-05-23 - Strict Dependency Installation Rule
 **Learning:** Running `npm install @eslint/js` (or similar packages) during routine environment setup aggressively modifies `package.json` and `package-lock.json`, unintentionally deleting large blocks of existing dependencies and causing severe compliance violations.
 **Action:** Never execute `npm install <package>` (or `npm i`) without the `--no-save` flag when installing temporary testing or linting dependencies to avoid destructive side-effects on project configurations.
+
+## 2024-06-18 - Consolidate Multiple Array Iterations on Hot Paths
+**Learning:** In high-frequency hot paths (e.g., physics engine ticks), running multiple sequential .forEach() loops over the same array to calculate and then apply physics forces creates unnecessary intermediate map reads/writes and increases GC overhead.
+**Action:** Consolidate sequential operations on the same data structure into a single standard for loop where possible to maximize execution speed and lower GC pressure.
