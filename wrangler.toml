@@ -2,6 +2,7 @@
 
 # aSpiral - Cloudflare Pages deployment
 name = "aspiral"
+main = "src/worker.ts"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-03-01"
 
