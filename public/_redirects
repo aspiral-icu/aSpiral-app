@@ -1,1 +1,1 @@
-/* /index.html 200
+# Single Page Application routing is handled by wrangler.toml [assets] not_found_handling = "single-page-app"
