@@ -5,6 +5,17 @@ All notable changes to the aSpiral project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-08-22
+
+### Added
+- **Pulsating Green Aurora Background**: Multi-ribbon jade/emerald celestial aurora curtains with calibrated luminance (`--aurora-green-1` 155 92% 58%, `--aurora-green-2` 142 95% 52%, `--aurora-green-3` 168 90% 55%) across the session canvas.
+- **Prefers-Reduced-Motion Aurora**: Resting freeze state with reduced opacity for users with vestibular/motion sensitivities.
+- **A11y & Touch Targets**: Enlarged control buttons to 44px minimum target size (WCAG 2.5.5), added descriptive tooltips to UltraFastToggle and question progress dots.
+
+### Changed
+- **3D Stage Palette Calibration**: Restored 3D floor bloom haze and rings to brand cosmic purple/fuchsia palette (`colors.primary`, `colors.spiralGlow`, `colors.spiralAccent`), ensuring stage remains crisp and separate from background aurora curtains.
+- **Dev Auth State**: Synchronously initialized mock user detection for instant headless visual testing.
+
 ## [1.0.6] - 2026-06-30
 
 ### Added
