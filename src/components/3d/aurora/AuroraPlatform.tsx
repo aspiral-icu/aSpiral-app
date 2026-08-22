@@ -110,10 +110,10 @@ export function AuroraPlatform({
     // Update materials when theme changes
     useEffect(() => {
         platformMatRef.current?.color.copy(colors.primary)
-        hazeMatRef.current?.color.copy(colors.auroraGreen1)
+        hazeMatRef.current?.color.copy(colors.spiralGlow)
         ring1MatRef.current?.color.copy(colors.spiralAccent)
-        ring2MatRef.current?.color.copy(colors.auroraGreen2)
-        sparkleMatRef.current?.color.copy(colors.auroraGreen1)
+        ring2MatRef.current?.color.copy(colors.primary)
+        sparkleMatRef.current?.color.copy(colors.spiralGlow)
 
         invalidate()
     }, [colors, version, invalidate])
@@ -145,7 +145,7 @@ export function AuroraPlatform({
                 <circleGeometry args={[GEOMETRY.hazeRadius, GEOMETRY.segments]} /> {/* NOSONAR */}
                 <meshBasicMaterial // NOSONAR
                     ref={hazeMatRef}
-                    color={colors.auroraGreen1}
+                    color={colors.spiralGlow}
                     transparent // NOSONAR
                     opacity={0.25}
                     alphaMap={glowTexture} // NOSONAR
@@ -180,7 +180,7 @@ export function AuroraPlatform({
                 ]} />
                 <meshBasicMaterial // NOSONAR
                     ref={ring2MatRef}
-                    color={colors.auroraGreen2}
+                    color={colors.primary}
                     transparent // NOSONAR
                     opacity={0.35}
                     blending={THREE.AdditiveBlending} // NOSONAR

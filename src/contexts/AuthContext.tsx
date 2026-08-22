@@ -39,11 +39,20 @@ export const useAuth = () => {
   return context;
 };
 
+// Synchronously detect dev mock user so ProtectedRoute never sees loading=true with no user
+function getDevMockUser(): { user: User; session: Session } | null {
+  if (typeof window === 'undefined') return null;
+  if (!localStorage.getItem('dev_mock_user')) return null;
+  const mock = { id: 'mock-user-123', email: 'user@aspiral.icu', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() } as User;
+  return { user: mock, session: { user: mock, access_token: 'mock', token_type: 'bearer', expires_in: 3600, refresh_token: 'mock' } as Session };
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const devMock = getDevMockUser();
+  const [user, setUser] = useState<User | null>(devMock?.user ?? null);
+  const [session, setSession] = useState<Session | null>(devMock?.session ?? null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!devMock);
 
   // Fetch user profile - uses any type since profiles table may not exist yet
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
@@ -68,6 +77,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Check for dev mock user (local preview and automated visual audits)
+    if (typeof window !== 'undefined' && localStorage.getItem('dev_mock_user')) {
+      const mock = { id: 'mock-user-123', email: 'user@aspiral.icu', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() } as User;
+      setUser(mock);
+      setSession({ user: mock, access_token: 'mock', token_type: 'bearer', expires_in: 3600, refresh_token: 'mock' } as Session);
+      setLoading(false);
+      return;
+    }
+
     // DEFENSIVE: Handle case where onAuthStateChange returns malformed data
     let subscription: { unsubscribe: () => void } | undefined;
 
