@@ -86,7 +86,14 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
 
-import { afterAll } from 'vitest';
+import { afterAll, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { TooltipProvider } from '../src/components/ui/tooltip';
+
+afterEach(() => {
+  cleanup();
+});
+
 afterAll(() => {
   queryClient.clear();
 });
@@ -94,7 +101,9 @@ afterAll(() => {
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{ui}</BrowserRouter>
+      <TooltipProvider delayDuration={0}>
+        <BrowserRouter>{ui}</BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };

@@ -84,14 +84,23 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
 
-import { afterAll } from 'vitest';
+import { afterAll, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { TooltipProvider } from '../src/components/ui/tooltip';
+
+afterEach(() => {
+  cleanup();
+});
+
 afterAll(() => {
   queryClient.clear();
 });
 
 const AllProviders = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>{children}</BrowserRouter>
+    <TooltipProvider delayDuration={0}>
+      <BrowserRouter>{children}</BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
@@ -105,8 +114,9 @@ describe('Omni Smoke Test - Components', () => {
     if (Component && typeof Component === 'function' && !path.includes('ui/')) {
       it(`successfully renders ${path} without crashing`, () => {
         try {
-          const { container } = render(<Component />, { wrapper: AllProviders });
+          const { container, unmount } = render(<Component />, { wrapper: AllProviders });
           expect(container).toBeTruthy();
+          unmount();
         } catch (e) {
           // If it requires specific props, it might throw. We catch to ensure it's logged but doesn't halt the suite if we are just smoke testing.
           // For strict validation, we expect it to not throw, but for coverage, the attempt to render covers the initial lines.
@@ -124,8 +134,9 @@ describe('Omni Smoke Test - Pages', () => {
     if (Component && typeof Component === 'function') {
       it(`successfully renders ${path} without crashing`, () => {
         try {
-          const { container } = render(<Component />, { wrapper: AllProviders });
+          const { container, unmount } = render(<Component />, { wrapper: AllProviders });
           expect(container).toBeTruthy();
+          unmount();
         } catch (e) {
           console.warn(`Failed to render page ${path}:`, e);
         }
