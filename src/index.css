@@ -22,9 +22,10 @@
     --spiral-accent: 280 85% 65%;
     --spiral-glow: 292 91% 58%;
 
-    /* Ambient green aurora wash - always-visible accent layer over the purple background */
-    --aurora-green-1: 155 55% 55%;
-    --aurora-green-2: 145 60% 48%;
+    /* Ambient green aurora wash - luminous celestial aurora layers over the cosmic purple background */
+    --aurora-green-1: 155 92% 58%;
+    --aurora-green-2: 142 95% 52%;
+    --aurora-green-3: 168 90% 55%;
 
     /* ===== PROCESSING STATE (working through it) ===== */
     --process-bg-start: 271 44% 15%;
@@ -515,12 +516,12 @@
 
 @keyframes aurora-green-pulse {
   0%, 100% {
-    opacity: 0.12;
+    opacity: 0.55;
     transform: translate(0, 0) scale(1);
   }
   50% {
-    opacity: 0.32;
-    transform: translate(-15px, 10px) scale(1.05);
+    opacity: 0.88;
+    transform: translate(-20px, 15px) scale(1.08);
   }
 }
 
@@ -533,7 +534,7 @@
     animation: none !important;
   }
   .aurora-green-ambient {
-    opacity: 0.12 !important;
+    opacity: 0.55 !important;
   }
 }
 

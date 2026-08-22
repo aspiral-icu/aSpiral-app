@@ -57,21 +57,27 @@ export function AuroraBackground() {
         }}
       />
 
-      {/* Ambient green aurora wash - always visible, independent of session/breakthrough state */}
+      {/* Ambient green aurora wash - always visible, luminous jade & emerald celestial ribbons */}
       <div
-        className="absolute inset-0 mix-blend-screen aurora-green-ambient"
+        className="absolute inset-0 mix-blend-screen aurora-green-ambient pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse 70% 45% at 65% 15%,
-              hsl(var(--aurora-green-1) / 0.55),
-              transparent 55%
+            radial-gradient(ellipse 85% 55% at 75% 20%,
+              hsl(var(--aurora-green-1) / 0.85) 0%,
+              hsl(var(--aurora-green-2) / 0.50) 35%,
+              transparent 65%
             ),
-            radial-gradient(ellipse 55% 35% at 15% 65%,
-              hsl(var(--aurora-green-2) / 0.45),
+            radial-gradient(ellipse 70% 45% at 20% 70%,
+              hsl(var(--aurora-green-2) / 0.75) 0%,
+              hsl(var(--aurora-green-3) / 0.40) 40%,
+              transparent 65%
+            ),
+            radial-gradient(ellipse 60% 35% at 50% 5%,
+              hsl(var(--aurora-green-3) / 0.65) 0%,
               transparent 55%
             )
           `,
-          filter: "blur(85px)",
+          filter: "blur(50px)",
         }}
       />
 

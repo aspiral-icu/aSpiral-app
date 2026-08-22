@@ -15,6 +15,8 @@ const CSS_VAR_KEYS = Object.freeze([
     'accent',
     'spiral-glow',
     'spiral-accent',
+    'aurora-green-1',
+    'aurora-green-2',
     'friction-color',
     'grease-color',
     'entity-color',
@@ -33,6 +35,8 @@ export interface ThemeColors {
     readonly accent: THREE.Color
     readonly spiralGlow: THREE.Color
     readonly spiralAccent: THREE.Color
+    readonly auroraGreen1: THREE.Color
+    readonly auroraGreen2: THREE.Color
     readonly friction: THREE.Color
     readonly grease: THREE.Color
     readonly entity: THREE.Color
@@ -49,6 +53,8 @@ const FALLBACK_COLORS = Object.freeze({
     accent: '#fde047',       // Yellow 300
     spiralGlow: '#e879f9',   // Fuchsia 400
     spiralAccent: '#a78bfa', // Violet 400
+    auroraGreen1: '#10e88a', // Jade 400
+    auroraGreen2: '#09f759', // Emerald 400
     friction: '#ef4444',     // Red 500
     grease: '#22c55e',       // Green 500
     entity: '#8b5cf6',       // Violet 500
@@ -97,6 +103,8 @@ function buildThemeColors(): ThemeColors {
         accent: createThreeColor('accent', FALLBACK_COLORS.accent, style),
         spiralGlow: createThreeColor('spiral-glow', FALLBACK_COLORS.spiralGlow, style),
         spiralAccent: createThreeColor('spiral-accent', FALLBACK_COLORS.spiralAccent, style),
+        auroraGreen1: createThreeColor('aurora-green-1', FALLBACK_COLORS.auroraGreen1, style),
+        auroraGreen2: createThreeColor('aurora-green-2', FALLBACK_COLORS.auroraGreen2, style),
         friction: createThreeColor('friction-color', FALLBACK_COLORS.friction, style),
         grease: createThreeColor('grease-color', FALLBACK_COLORS.grease, style),
         entity: createThreeColor('entity-color', FALLBACK_COLORS.entity, style),

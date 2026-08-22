@@ -110,10 +110,10 @@ export function AuroraPlatform({
     // Update materials when theme changes
     useEffect(() => {
         platformMatRef.current?.color.copy(colors.primary)
-        hazeMatRef.current?.color.copy(colors.spiralGlow)
+        hazeMatRef.current?.color.copy(colors.auroraGreen1)
         ring1MatRef.current?.color.copy(colors.spiralAccent)
-        ring2MatRef.current?.color.copy(colors.secondary)
-        sparkleMatRef.current?.color.copy(colors.spiralGlow)
+        ring2MatRef.current?.color.copy(colors.auroraGreen2)
+        sparkleMatRef.current?.color.copy(colors.auroraGreen1)
 
         invalidate()
     }, [colors, version, invalidate])
@@ -145,9 +145,9 @@ export function AuroraPlatform({
                 <circleGeometry args={[GEOMETRY.hazeRadius, GEOMETRY.segments]} /> {/* NOSONAR */}
                 <meshBasicMaterial // NOSONAR
                     ref={hazeMatRef}
-                    color={colors.spiralGlow}
+                    color={colors.auroraGreen1}
                     transparent // NOSONAR
-                    opacity={0.18}
+                    opacity={0.25}
                     alphaMap={glowTexture} // NOSONAR
                     blending={THREE.AdditiveBlending} // NOSONAR
                     depthWrite={false} // NOSONAR
@@ -171,7 +171,7 @@ export function AuroraPlatform({
                 />
             </mesh>
 
-            {/* Outer ring (secondary) */}
+            {/* Outer ring (secondary aurora green) */}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}> {/* NOSONAR */}
                 <ringGeometry args={[ // NOSONAR
                     GEOMETRY.outerRingInner,
@@ -180,9 +180,9 @@ export function AuroraPlatform({
                 ]} />
                 <meshBasicMaterial // NOSONAR
                     ref={ring2MatRef}
-                    color={colors.secondary}
+                    color={colors.auroraGreen2}
                     transparent // NOSONAR
-                    opacity={0.22}
+                    opacity={0.35}
                     blending={THREE.AdditiveBlending} // NOSONAR
                     depthWrite={false} // NOSONAR
                 />
