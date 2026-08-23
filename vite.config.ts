@@ -36,19 +36,18 @@ export default defineConfig(({ mode }) => ({
             id.includes("scheduler")
           ) return "vendor-react";
 
-          // 3D rendering stack (largest dependency family)
-          if (
-            id.includes("@react-three") ||
-            /node_modules\/three[/\\]/.test(id) ||
-            id.includes("troika-three-text") ||
-            id.includes("postprocessing")
-          ) return "vendor-three";
+          // 3D rendering stack - granularly split for optimized FCP
+          if (id.includes("@react-three")) return "vendor-three-fiber";
+          if (id.includes("troika-three-text") || id.includes("postprocessing")) return "vendor-three-effects";
+          if (/node_modules\/three[/\\]/.test(id)) return "vendor-three-core";
 
           // Data-viz stack
           if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
 
-          // PDF/export stack
-          if (id.includes("html2pdf.js") || id.includes("jspdf") || id.includes("html2canvas")) return "vendor-export";
+          // PDF/export stack - granularly split for on-demand loading
+          if (id.includes("jspdf")) return "vendor-jspdf";
+          if (id.includes("html2canvas")) return "vendor-html2canvas";
+          if (id.includes("html2pdf.js")) return "vendor-html2pdf";
 
           // Data/cache/network stacks
           if (id.includes("@supabase/supabase-js") || id.includes("@supabase/")) return "vendor-supabase";

@@ -233,12 +233,53 @@ jobs:
         continue-on-error: true
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # Playwright Automated E2E Visual Regression
+  # ─────────────────────────────────────────────────────────────────────────────
+  e2e-visual-regression:
+    name: E2E Visual Regression
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright Report on Failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # Summary Job (for branch protection rules)
   # ─────────────────────────────────────────────────────────────────────────────
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [deno-tests, build, capacitor-check, ios-compliance-check, android-check, lighthouse]
+    needs: [deno-tests, build, capacitor-check, ios-compliance-check, android-check, lighthouse, e2e-visual-regression]
     if: always()
 
     steps:
@@ -247,6 +288,10 @@ jobs:
           FAILED=0
           if [[ "${{ needs.build.result }}" != "success" ]]; then
             echo "❌ Build (typecheck + lint + test + audit + production build) failed"
+            FAILED=1
+          fi
+          if [[ "${{ needs.e2e-visual-regression.result }}" != "success" ]]; then
+            echo "❌ E2E Visual Regression tests failed"
             FAILED=1
           fi
           if [[ "${{ needs.deno-tests.result }}" != "success" ]]; then

@@ -1,7 +1,10 @@
-import { Component, type ReactNode, useMemo, useState } from "react";
+import { Component, type ReactNode, useMemo, useState, lazy, Suspense } from "react";
 import { cn } from "@/lib/utils";
-import { EnhancedSpiralScene } from "./3d/EnhancedSpiralScene";
 import { SpiralHeroSVG } from "./SpiralHeroSVG";
+
+const EnhancedSpiralScene = lazy(() =>
+  import("./3d/EnhancedSpiralScene").then((m) => ({ default: m.EnhancedSpiralScene }))
+);
 
 function parseEnvBoolean(value: unknown, defaultValue: boolean): boolean {
   if (value === true || value === "true" || value === "1") return true;
@@ -52,7 +55,9 @@ export function SpiralStage({ className }: { className?: string }) {
     >
       {shouldUseWebGL ? (
         <WebGLErrorBoundary onError={() => setWebglFailed(true)}>
-          <EnhancedSpiralScene interactive />
+          <Suspense fallback={<SpiralHeroSVG />}>
+            <EnhancedSpiralScene interactive />
+          </Suspense>
         </WebGLErrorBoundary>
       ) : (
         <SpiralHeroSVG />

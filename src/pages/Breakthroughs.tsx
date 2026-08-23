@@ -24,7 +24,6 @@ import {
   X,
 } from 'lucide-react';
 import { format, startOfDay, endOfDay } from 'date-fns';
-import { exportBreakthroughCard } from '@/lib/pdfExport';
 import { useToast } from '@/hooks/use-toast';
 import { useStreak } from '@/hooks/useStreak';
 
@@ -120,6 +119,7 @@ const Breakthroughs = () => {
   const handleShare = async (b: BreakthroughItem) => {
     setExportingId(b.id);
     try {
+      const { exportBreakthroughCard } = await import('@/lib/pdfExport');
       await exportBreakthroughCard({
         friction: b.friction,
         grease: b.grease,
