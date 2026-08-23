@@ -5,6 +5,13 @@ All notable changes to the aSpiral project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-08-23
+
+### Added
+- **Automated E2E Visual Regression Suite**: Integrated `@playwright/test` into GitHub Actions CI pipeline running headless Chromium visual assertions on both Landing Page and `/app` session view.
+- **Granular Code-Splitting**: Split Three.js and export bundles into modular chunks (`vendor-three-core`, `vendor-three-fiber`, `vendor-three-effects`, `vendor-html2canvas`, `vendor-html2pdf`) for accelerated First Contentful Paint.
+- **Dynamic 3D Component Loading**: Lazy-loaded `EnhancedSpiralScene` with `<SpiralHeroSVG />` fallback to minimize initial blocking assets.
+
 ## [1.0.7] - 2026-08-22
 
 ### Added
