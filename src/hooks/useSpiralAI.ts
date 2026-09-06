@@ -14,6 +14,7 @@
  */
 
 import { useState, useCallback, useRef, useReducer, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useSessionStore } from "@/stores/sessionStore";
 import { createLogger } from "@/lib/logger";
 import { trackBreakthroughRejected, type BreakthroughRejectionReason } from "@/lib/analytics";
@@ -593,11 +594,17 @@ export function useSpiralAI(options: UseSpiralAIOptions = {}) {
           const abortController = new AbortController();
           const timeoutId = setTimeout(() => abortController.abort(), AI_REQUEST_TIMEOUT_MS);
           try {
+            const { data: sessionData } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+            const accessToken = sessionData?.session?.access_token;
+            const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+
             response = await fetch(SPIRAL_AI_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(anonKey ? { "apikey": anonKey } : {}),
+                ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : (anonKey ? { "Authorization": `Bearer ${anonKey}` } : {})),
+              },
           body: JSON.stringify({
             transcript,
             stream: true,
