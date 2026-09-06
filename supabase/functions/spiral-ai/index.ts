@@ -17,6 +17,7 @@ import { loadAspiralMindcore } from "./aspiralMindcoreLoader.ts";
 // =============================================================================
 
 import { getCorsHeaders, handleCorsPreFlight } from "../_shared/cors.ts";
+import { requireUser } from "../_shared/requireUser.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -290,7 +291,12 @@ function generateRequestId(): string {
 // HELPER FUNCTIONS FOR ERROR RESPONSES
 // =============================================================================
 
-function createErrorResponse(status: number, body: unknown, additionalHeaders: Record<string, string> = {}): Response {
+function createErrorResponse(
+  status: number,
+  body: unknown,
+  corsHeaders: Record<string, string>,
+  additionalHeaders: Record<string, string> = {}
+): Response {
   return new Response(
     JSON.stringify(body),
     {
@@ -304,14 +310,14 @@ function createErrorResponse(status: number, body: unknown, additionalHeaders: R
   );
 }
 
-function handleValidationError(errors: unknown[]): Response {
+function handleValidationError(errors: unknown[], corsHeaders: Record<string, string>): Response {
   return createErrorResponse(400, {
     error: "Invalid request format",
     details: (errors as Array<{ message: string }>)?.map((e) => e.message),
-  });
+  }, corsHeaders);
 }
 
-function handleInjectionBlock(): Response {
+function handleInjectionBlock(corsHeaders: Record<string, string>): Response {
   return createErrorResponse(200, {
     entities: [],
     connections: [],
@@ -319,29 +325,29 @@ function handleInjectionBlock(): Response {
     response: INJECTION_RESPONSES.BLOCKED.message,
     blocked: true,
     category: "INJECTION_ATTEMPT",
-  }, { "X-Security-Block": "INJECTION" });
+  }, corsHeaders, { "X-Security-Block": "INJECTION" });
 }
 
-function handleAnomalyDetection(): Response {
+function handleAnomalyDetection(corsHeaders: Record<string, string>): Response {
   return createErrorResponse(429, {
     error: INJECTION_RESPONSES.RATE_ANOMALY.message,
     retryAfter: INJECTION_RESPONSES.RATE_ANOMALY.retryAfter,
-  }, { "Retry-After": "60" });
+  }, corsHeaders, { "Retry-After": "60" });
 }
 
-function handleRateLimit(rateLimitResult: RateLimitResult): Response {
+function handleRateLimit(rateLimitResult: RateLimitResult, corsHeaders: Record<string, string>): Response {
   return createErrorResponse(429, {
     error: SAFE_RESPONSES.RATE_LIMITED.message,
     retryAfter: rateLimitResult.retryAfterSeconds,
     upgradePrompt: rateLimitResult.upgradePrompt,
-  }, {
+  }, corsHeaders, {
     "Retry-After": String(rateLimitResult.retryAfterSeconds || 60),
     "X-RateLimit-Limit": String(rateLimitResult.limits.requestsPerMinute),
     "X-RateLimit-Remaining": String(Math.max(0, rateLimitResult.limits.requestsPerMinute - rateLimitResult.currentUsage.minute)),
   });
 }
 
-function handleModerationBlock(moderationResult: ModerationResult): Response {
+function handleModerationBlock(moderationResult: ModerationResult, corsHeaders: Record<string, string>): Response {
   // Return appropriate safe response
   if (moderationResult.action === "REDIRECT_RESOURCES") {
     return createErrorResponse(200, {
@@ -349,7 +355,7 @@ function handleModerationBlock(moderationResult: ModerationResult): Response {
       resources: moderationResult.resources,
       blocked: true,
       category: "CRISIS_SUPPORT",
-    });
+    }, corsHeaders);
   }
 
   let safeResponse = SAFE_RESPONSES.BLOCKED_GENERAL;
@@ -368,7 +374,7 @@ function handleModerationBlock(moderationResult: ModerationResult): Response {
     response: safeResponse.message,
     blocked: true,
     category: moderationResult.category,
-  }, {
+  }, corsHeaders, {
     "X-Content-Blocked": "true",
     "X-Block-Category": moderationResult.category || "POLICY_VIOLATION",
   });
@@ -511,6 +517,10 @@ serve(async (req) => {
   // Build origin-aware CORS headers for this request
   const corsHeaders = getCorsHeaders(req);
 
+  // Authentication Gate: Prevent unauthenticated LLM credit drain
+  const userOrResp = await requireUser(req, corsHeaders);
+  if (userOrResp instanceof Response) return userOrResp;
+
   try {
     if (!GROQ_API_KEY) {
       console.error("[SPIRAL-AI] GROQ_API_KEY not configured");
@@ -543,7 +553,7 @@ serve(async (req) => {
     if (!inputValidation.success) {
       console.error("[SPIRAL-AI] ❌ Input validation failed:", inputValidation.errors);
       complianceLogger.log("VALIDATION_FAILED", { errors: inputValidation.errors });
-      return handleValidationError(inputValidation.errors || []);
+      return handleValidationError(inputValidation.errors || [], corsHeaders);
     }
 
     const { 
@@ -602,7 +612,7 @@ serve(async (req) => {
 
       await complianceLogger.finalizeRun({ status: "BLOCKED", blocked: true });
       await complianceLogger.flush(FLUSH_BLOCK_MS);
-      return handleInjectionBlock();
+      return handleInjectionBlock(corsHeaders);
     }
 
     // =======================================================================
@@ -616,7 +626,7 @@ serve(async (req) => {
       
       await complianceLogger.finalizeRun({ status: "BLOCKED", blocked: true });
       await complianceLogger.flush(FLUSH_BLOCK_MS);
-      return handleAnomalyDetection();
+      return handleAnomalyDetection(corsHeaders);
     }
 
     // =======================================================================
@@ -638,7 +648,7 @@ serve(async (req) => {
 
       await complianceLogger.finalizeRun({ status: "BLOCKED", blocked: true });
       await complianceLogger.flush(FLUSH_BLOCK_MS);
-      return handleRateLimit(rateLimitResult);
+      return handleRateLimit(rateLimitResult, corsHeaders);
     }
 
     // =======================================================================
@@ -696,7 +706,7 @@ serve(async (req) => {
 
       await complianceLogger.finalizeRun({ status: "BLOCKED", blocked: true });
       await complianceLogger.flush(FLUSH_BLOCK_MS);
-      return handleModerationBlock(moderationResult);
+      return handleModerationBlock(moderationResult, corsHeaders);
     }
     
     // =======================================================================

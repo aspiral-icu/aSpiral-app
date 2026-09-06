@@ -27,6 +27,8 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSessionPersistence } from "@/hooks/useSessionPersistence";
 import { useAuth } from "@/contexts/AuthContext";
+import { isProTier } from "@/lib/subscription";
+import { BreakthroughPaywallModal } from "@/components/subscription/BreakthroughPaywallModal";
 import { useKeyboardShortcuts, ASPIRAL_SHORTCUTS } from "@/hooks/useKeyboardShortcuts";
 import { loadStoredSettings } from "@/lib/settings";
 import { resolveVoiceProfile } from "@/lib/voiceProfile";
@@ -49,7 +51,7 @@ interface SpiralChatProps { }
 
 export const SpiralChat = forwardRef<SpiralChatHandle, SpiralChatProps>((_, ref) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [input, setInput] = useState("");
   const [is3DExpanded, setIs3DExpanded] = useState(() =>
     typeof globalThis.window !== "undefined" ? globalThis.window.matchMedia("(min-width: 1024px)").matches : true
@@ -573,8 +575,8 @@ export const SpiralChat = forwardRef<SpiralChatHandle, SpiralChatProps>((_, ref)
           {processingStage && <LoadingState stage={processingStage} />}
         </AnimatePresence>
 
-        {/* Cinematic Player - plays before breakthrough card shows */}
-        {showCinematic && !cinematicComplete && (
+        {/* Phase 2: Subscription Gating on Cinematic Breakthrough */}
+        {showCinematic && !cinematicComplete && isProTier(profile?.tier) && (
           <Suspense fallback={null}>
             <CinematicPlayer
               variant={undefined} // Random variant selection
@@ -587,6 +589,16 @@ export const SpiralChat = forwardRef<SpiralChatHandle, SpiralChatProps>((_, ref)
             />
           </Suspense>
         )}
+
+        {/* Phase 2: Paywall Gate Modal for Free Users */}
+        <BreakthroughPaywallModal
+          isOpen={showCinematic && !cinematicComplete && !isProTier(profile?.tier)}
+          onClose={handleCinematicComplete}
+          onUpgradeSuccess={() => {
+            // Upgrade will automatically make isProTier true on profile update
+          }}
+          onContinueTextOnly={handleCinematicComplete}
+        />
 
         {/* Breakthrough Overlay Card */}
         <BreakthroughCard
